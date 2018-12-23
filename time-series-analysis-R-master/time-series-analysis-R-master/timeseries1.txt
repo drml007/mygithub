@@ -1,0 +1,490 @@
+## https://cran.r-project.org/web/views/TimeSeries.html
+
+plot(lynx); length(lynx)
+plot(LakeHuron);length(LakeHuron)
+plot(nottem);length(nottem)
+plot(AirPassengers);length(AirPassengers)
+plot(EuStockMarkets);length(EuStockMarkets)
+plot(sunspot.year);length(sunspot.year)
+?rnorm
+
+
+# Here you can find all relevant links to this course:
+#   
+#   1. R task view on time series analysis:
+#   
+#   https://cran.r-project.org/web/views/TimeSeries.ht...
+# 
+# 2. Package lubridate overview:
+#   
+#   https://cran.r-project.org/web/packages/lubridate/...
+# 
+# 3. Article on time and date classes in R (starting page 30):
+#   
+#   https://cran.r-project.org/doc/Rnews/Rnews_2004-1....
+# 
+# 4. Mini Book on statistical forecasting:
+#   
+#   http://people.duke.edu/~rnau/411home.htm
+# 
+# 5. Online Course on time series with R examples:
+#   
+#   https://onlinecourses.science.psu.edu/stat510/node...
+# 
+# 6. Free Ebook on time series analysis by R Hyndman
+# 
+# https://otexts.org/fpp2/
+
+
+x = as.POSIXct("2015-12-25 11:45:34")
+y = as.POSIXlt("2015-12-25 11:45:34")
+unclass(x)
+unclass(y)
+y$zone
+
+x
+y
+x= as.Date("2015-12-25")
+x
+class(x)
+unclass(x)
+
+?unclass
+library(chron)
+x = chron("12/25/2015", "23:34:09")
+x
+class(x)
+unclass(x)
+
+
+library(lubridate)
+
+## different ways in how to input dates
+ymd(20180906)
+dmy(24091984)
+mdy(9241984)
+
+## lets use time and date together
+mytimepoint <- ymd_hm("20180924 11:24", tz = "Europe/Prague")
+mytimepoint
+
+## extracting the component of it
+minute(mytimepoint)
+day(mytimepoint)
+hour(mytimepoint)
+
+
+## we can also change values within our object
+hour(mytimepoint) <- 15
+mytimepoint
+
+
+## which time zones do we have available ....time zone recognition also depends on your location and machine 
+olson_time_zones() ## deprecated
+OlsonNames()
+
+
+#lets check which day our time point is 
+wday(mytimepoint)
+
+
+## label to display the name of the day .... no abbreviation
+wday(mytimepoint, label = T, abbr = F)
+
+## we can calculate which time  our timepoint would be in another time zone
+with_tz(mytimepoint, tz = "Asia/Kolkata")
+
+
+## time intervals
+time1 = ymd_hm("1993-09-23 11:23", tz = "Europe/Prague")
+time2 = ymd_hm("1995-11-22 11:23", tz = "Europe/Prague")
+
+## getting the interval 
+myinterval = interval (time1, time2); myinterval
+class(myinterval) ## interval is an object class from lubridate
+
+
+## Excercise
+a = ymd(c(19980101, 19990101, 20000101, 20010101), tz = "CET")
+b = hms(c("22 4 5","4-9-45", "11:9:56","23 23 59"))
+f = rnorm(4,10) ; f = round(f, digits = 2) ; f
+#rnorm(<number of random samples>, <mean of those samples>)
+
+
+datetimemeasurement = cbind.data.frame(date = a, time = b , mesaure = f)
+datetimemeasurement
+
+
+## calculations with time
+minutes(7)
+## errors
+minutes(2.5)
+## get the duration of minutes
+dminutes(3)
+## how to add minutes and seconds
+minutes(2) + seconds(67)
+# class duration to perform additions like above
+as.duration(minutes(2) + seconds(67))
+
+
+## lubridate has an array  of time  classes, period or duration differ
+
+
+## which year was a leap year 
+leap_year(2009:2014)
+
+ymd(20140101) + years(1)
+ymd(20140201) + dyears(1)
+
+## lets do whole thing with a leap year
+leap_year(2016)
+ymd(20160101) + years(1)
+ymd(20160201) + dyears(1)
+
+## dyears - duration years will always take into 365 days for a year  but with "years" will increase the year unit by +1
+
+?runif
+
+## Creating Time Series
+mydata = runif(n= 50, min = 10, max = 45)
+mydata
+
+## ts for class time series 
+## Data starts in 1956 - 4 observations / year (quarterly)
+mytimeseries = ts(data = mydata,
+                  start = c(1956,3), frequency = 4)
+
+plot(mytimeseries)
+class(mytimeseries)
+time(mytimeseries)
+
+## Write notes from notebook here
+
+## hourly measurements with daily patterns starts at 8AM on the first day
+## start = c(1,8), frequency = 24
+
+## Measurement taken twice a day on weekdays with weekly patterns, starts at the first week
+## start = 1, frequency = 10 ## NA for holidays - regular spacing 
+
+## Monthly measurements with yearly cycle - frequency = 12
+
+## Weekly measurements with yearly cycle - frequency = 52
+
+## While specifying the start and frequency arguments 
+## ... think about the cycle and the number of measurements per cycle
+
+## the above method applies with mts class too
+
+?cumsum
+
+##task
+
+set.seed(123)
+x = cumsum(rnorm(n=450))
+x
+gr_ts = ts(data = x, start = c(1914,11), frequency = 12)
+plot(gr_ts)
+
+
+## added from solution
+library(lattice)
+xyplot.ts(gr_ts)
+
+## standard rbase plots
+plot(nottem)
+
+## plot of components
+plot(decompose(nottem))
+
+library(forecast)
+library(ggplot2)
+
+## Directly plotting a forecast of a model
+plot(forecast(auto.arima(nottem)), h = 5)
+
+## if the data is not time series then we can use plot.ts(vector)
+
+## ggplot equivalent to plot
+autoplot((nottem))
+
+## ggplots work with different layers
+autoplot(nottem) + ggtitle("Autoplot of Nottingham temp data")
+
+
+## Time series specific plots
+ggseasonplot(nottem)
+
+ggmonthplot(nottem)
+
+class(nottem)
+
+View(AirPassengers)
+class(AirPassengers)
+
+seasonplot(AirPassengers,
+           year.labels = TRUE,
+           col = c("red","blue"),
+           xlab = "",
+           labelgap = 0.35,
+           type = "l",
+           bty = "l",
+           cex = 0.75
+           )
+           
+?seasonplot
+
+library(zoo)
+library(tidyr)
+
+?separate
+
+irreg.split = 
+  separate(
+    irregular_sensor,
+    col = X1,
+    into = c("date","time"),
+    sep = 8,
+    remove = T
+  )
+
+View(irreg.split)
+
+sensor.date = strptime(irreg.split$date,'%m/%d/%y')
+sensor.date
+
+## Creating a data frame 
+irregts.df = data.frame(
+  date = as.Date(sensor.date),
+                 measurement = irregular_sensor$X2)
+
+View(irregts.df)
+
+
+##Getting a zoo object
+irreg.dates = zoo(irregts.df$measurement,
+                  order.by = irregts.df$date)
+irreg.dates
+
+
+## regularizing with aggregate
+ag.irregtime = aggregate(irreg.dates, as.Date, mean)
+ag.irregtime
+
+
+##########
+## Method 2 - date and time component kept
+sensor.date1 = strptime(irregular_sensor$X1,'%m/%d/%y %I:%M %p')
+sensor.date1
+
+
+
+
+
+##Getting a zoo object
+irreg.dates1 = zoo(irregular_sensor$X2,
+                  order.by = sensor.date1)
+irreg.dates1
+
+plot(irreg.dates1)
+
+## regularizing with aggregate
+ag.irregtime = aggregate(irreg.dates1, as.Date, sum)
+ag.irregtime
+plot(ag.irregtime)
+
+
+## Handling outliers and missing data 
+myts = ts(ag.irregtime)
+plot(myts)
+
+## convert the 2nd column to a simple ts 
+myts = ts(ts_NAandOutliers$mydata)
+myts
+
+summary(myts)
+plot(myts)
+
+myts1 = tsoutliers(myts)
+myts1
+class(myts1)
+plot(myts)
+
+## last observation carried forward 
+myts.NAlocf = na.locf(myts)
+
+## values provided beforehand
+myts.NAfill = na.fill(myts,33)
+
+## na.trim trims the NA values at the borders
+
+##interp = interpolation
+myts.NAinterp = na.interp(myts)
+mytsclean = tsclean(myts) ## tslean() = tsoutliers() + tsinterp()
+plot(mytsclean)
+summary(mytsclean)
+
+
+## xts
+
+
+## Three Simple Methods
+## Naive method - last observation carried forward method
+## ... projects the last observation into the future
+## use the naive() function in the forecast package
+## the function can be tweaked to even fit a seasonal dataset
+## example - to forecast feb18 r takes the last observed value of feb17
+## snaive()
+
+
+## Average method
+## Calculates the mean of the data and projects that into the future
+## use the meanf() function from the forecast package
+
+## Drift method
+## Calculate the diference between first and last observation and carries that increase into the future
+## use the rwf() function from the forecast package
+
+
+
+## example dataset 
+set.seed(95)
+myts = ts(rnorm(200), start=(1818))
+plot(myts)
+
+library(forecast)
+meanm = meanf(myts, h = 20)
+naivem = naive(myts,h = 20)
+driftm = rwf(myts, h = 20, drift = T)
+
+plot(meanm, plot.conf= F, main="")
+
+lines(naivem$mean, col=123, lwd = 2)
+
+lines(driftm$mean, col = 22, lwd = 2)
+
+legend("topleft",lty = 1, col=c(4,123,22),
+       legend= c("Mean Method","Naive method","Drift method"))
+
+## Model comparison and accuracy 
+
+## MAE - Mean Absolute Error
+## The mean of all differences between actual and forecasted absolute values
+## MAE = takes absolute values 
+
+## RMSE - Root Mean Squared Error/Deviation to offset signages
+## The sample standard deviation of differences between actual and forecasted values
+
+# MASE - Mean Absolute Scaled Error
+# Measures the forecast error compared to the error of a naive forecast
+# 0 < x < 1
+# x = 1 as good as naive forecast - always picking the last value observed
+# x = 0.5 the model has double the prediction accuracy as a naive last value approach
+## which means the lower the value of x the better
+# x> 1 means the model needs a lot of improvement
+
+# MAPE - Mean Absolute Percentage Error
+# Measures the difference of forecast errors and divides it by the actual observation value
+# Does not allow for 0 values
+# Puts much more weight on extreme values and positive errors
+# scale independent - you can use it to compare a model on different datasets
+
+# AIC - Akaike Information Criterion 
+# Common measure in forecasting, statistical modeling and machine learning
+# it is great to compare the complexity of different models
+# Penalizes more complex models
+# the lower the AIC score the better
+
+set.seed(95)
+myts = ts(rnorm(200),start= 1818)
+mytstrain = window(myts,start = 1818, end = 1988)
+plot(mytstrain)
+
+library(forecast)
+meanm = meanf(mytstrain, h = 30)
+naivem = naive(mytstrain, h = 30)
+driftm = rwf(mytstrain, h = 30, drift = T)
+
+
+mytstest = window(myts, start = 1988)
+
+accuracy(meanm, mytstest) ## we get the lowest values of almost all main paramters discussed above so it is the best
+accuracy(naivem, mytstest)
+accuracy(driftm, mytstest)
+
+## Rule of thumb - We want all the patterns in the model, only randomness should stay in the residuals ....general quality check of the models
+## Residuals should be the container of randomness (data that cannot be explained in mathematical terms)
+## .... ideally they have a mean of zero and constant variance
+## The residuals should be uncorrelated (correlated residuals still have information left in them)
+## .... ideally they are normally distributed
+## A non zero mean can be easily fixed with addition or subtraction, while correlations can be extracted via 
+## ... modeling tools (e.g. differencing) - ensuring normal distribution (constant variance)
+## ... might be possible in some cases , however, transformations (e.g. logarithms) might help
+
+var(meanm$residuals)
+mean(meanm$residuals)
+
+mean(naivem$residuals)
+
+naivewithoutNA = naivem$residuals
+naivewithoutNA = naivewithoutNA[2:170]
+is.na(naivewithoutNA)
+var(naivewithoutNA)
+mean(naivewithoutNA)
+
+
+hist(naivem$residuals)
+acf(naivewithoutNA)
+
+
+## in acf plot - several bars range outside the threshold meaning the the data has significant autocorrelation
+## 4/20 bars are over / below the thresholds - the residuals still have information left in them
+## Improving the model (e.g. applying a transformation) might reduce the bars
+
+
+## STationarity Test 
+## has the same statistical properties thoughout the time series
+## statistical properties - variance, mean, autocorrelation
+## most analytical procedures in time series require stationary data 
+## if the data lacks stationarity there are transformations to be applied to make the data stationary  or it can be changed via differencing
+## Differencing adjusts the data according to the time spans that differ in e.g. variance or mean (extensively used in ARIMA models)
+
+
+## De-Trending
+## loads of time series have a trend in it --> mean changes as a result of of the trend 
+## ... causes underestimated predictions
+## Solution:
+## 1. Test if you get staionarity if you de-trend the data set : take the trend component out of the dataset --> trend stationarity
+## 2. If the above procedure is not enough then we can use differencing --> difference stationarity
+## 3. Unit-root tests tell whether there is a trend staionarity or a difference stationarity 
+###### the first difference goes from one period to the very next one (two successive steps)
+###### The first difference is stationarity and random --> random walk (each value is a random step away from a previous value)
+###### The first difference is stationary but not completely random (e.g. values are autocorrelated) --> require a more sophisticated model (e.g. exponential smoothing, ARIMA)
+## urca package - unit root tests 
+## library tseries - adf.test(x) - the Augmented Dickey Fuller Test removes the autocorrelation and tests for non - stationarity
+## funitroot tests package - for mnore advanced tests
+x = rnorm(1000)
+library(tseries)
+adf.test(x)
+
+
+plot(nottem)
+plot(decompose(nottem))
+adf.test(nottem)
+
+
+y = diffinv(x)
+plot(y)
+adf.test(y)
+
+
+
+
+
+
+
+
+
+
+
+
+
